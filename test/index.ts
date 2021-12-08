@@ -21,14 +21,11 @@ describe("AvgPrice", function() {
 
   this.beforeAll(async function () {
     const signers = await ethers.getSigners()
-    const dateTimeFactory = await ethers.getContractFactory('DateTime', signers[0])
-    const dateTime = await dateTimeFactory.deploy()
-    await dateTime.deployed()
 
     const avgPriceFactory = await ethers.getContractFactory('AvgPrice', signers[0])
     avgPrice = await upgrades.deployProxy(
         avgPriceFactory,
-        [dateTime.address],
+        [],
         {initializer: 'initialize'}) as AvgPrice
     await avgPrice.deployed()
 

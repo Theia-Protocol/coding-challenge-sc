@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-// import "https://github.com/pipermerriam/ethereum-datetime/blob/master/contracts/DateTime.sol";
 import "./DateTime.sol";
 import "hardhat/console.sol";
-// import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 // import "@openzeppelin/contracts/security/ReentrancyGuards.sol";
 
 
 
-contract AvgPriceV3 is OwnableUpgradeable {
+contract AvgPriceV3 is DateTime, OwnableUpgradeable {
 
     // Struct for everyday Information
     struct DayInfo {
@@ -20,9 +18,7 @@ contract AvgPriceV3 is OwnableUpgradeable {
    
     // Price & Total list
     DayInfo[31][12] private _priceList;
-
-    DateTime dateUtil;
-    
+   
     // Initializer
     function initialize() public initializer {
         __Ownable_init();
@@ -32,8 +28,8 @@ contract AvgPriceV3 is OwnableUpgradeable {
     // @month : 1 - 12
     // @day : 1 - 31
     modifier correctDayRange(uint8 month, uint8 day){
-        uint16 currentYear = dateUtil.getYear(block.timestamp);
-        require(month > 0 && month <= 12 && day > 0 && day <= (dateUtil.getDaysInMonth(month, currentYear)), "Invalid Date");
+        uint16 currentYear = getYear(block.timestamp);
+        require(month > 0 && month <= 12 && day > 0 && day <= (getDaysInMonth(month, currentYear)), "Invalid Date");
         _;
     }
 
@@ -42,8 +38,8 @@ contract AvgPriceV3 is OwnableUpgradeable {
     // @day : 1 - 31
     modifier onlyToday(uint8 month, uint8 day) {
         uint currentTime = block.timestamp;
-        uint8 currentMonth = dateUtil.getMonth(currentTime);
-        uint8 currentDay = dateUtil.getDay(currentTime);
+        uint8 currentMonth = getMonth(currentTime);
+        uint8 currentDay = getDay(currentTime);
         require(currentMonth == month && currentDay == day, 'Not able to set price on another day.');
         _;
     }
@@ -97,8 +93,8 @@ contract AvgPriceV3 is OwnableUpgradeable {
             return 0;
 
         if (day == 1) {
-            uint16 currentYear = dateUtil.getYear(block.timestamp);
-            uint8 lastMonthDays = dateUtil.getDaysInMonth(month - 1, currentYear);
+            uint16 currentYear = getYear(block.timestamp);
+            uint8 lastMonthDays = getDaysInMonth(month - 1, currentYear);
             return _priceList[month - 2][lastMonthDays - 1].total;
         }
         return _priceList[month - 1][day-2].total;
@@ -109,20 +105,20 @@ contract AvgPriceV3 is OwnableUpgradeable {
     // Get total Days count
     function getDayCounts(uint8 fromMonth, uint8 fromDay, uint8 toMonth, uint8 toDay) private view returns(uint) {
         uint8[12] memory daysList = [31,28,31,30,31,30,31,31,30,31,30,31];
-        // uint16 currentYear = dateUtil.getYear(block.timestamp);
+        // uint16 currentYear = getYear(block.timestamp);
         uint16 totalDayCounts;
 
         if (fromMonth == toMonth) {
             totalDayCounts = toDay - fromDay + 1;
         } else {
-            uint16 currentYear = dateUtil.getYear(block.timestamp);
-            if (dateUtil.isLeapYear(currentYear)){
+            uint16 currentYear = getYear(block.timestamp);
+            if (isLeapYear(currentYear)){
                 daysList[1] = 29;
             }
-            totalDayCounts = dateUtil.getDaysInMonth(fromMonth, currentYear);
+            totalDayCounts = getDaysInMonth(fromMonth, currentYear);
             totalDayCounts = totalDayCounts - fromDay + 1 + toDay;
             for (uint8 i = fromMonth + 1; i < toMonth; i++) {
-                // totalDayCounts += dateUtil.getDaysInMonth(i, currentYear);
+                // totalDayCounts += getDaysInMonth(i, currentYear);
                 totalDayCounts += daysList[i-1];
             }
         }

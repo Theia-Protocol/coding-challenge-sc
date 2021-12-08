@@ -10,7 +10,7 @@ async function main() {
   const AvgPriceV2 = await ethers.getContractFactory('AvgPriceV2');
   console.log('Upgrading AvgPrice to Version2...');
   const avgPrice = await upgrades.upgradeProxy(
-    '0x57c1593B240E1e2a43c7BF3e8f9d3Cc79C2d4C89',
+    '0x8e54130B70541A114351e1D4977Ed0b491E8E99D',
     AvgPriceV2
   );
   await avgPrice.deployed();
